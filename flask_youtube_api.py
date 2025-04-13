@@ -27,7 +27,7 @@ def fetch_youtube_data(query):
 
 
 def fetch_video_details(video_ids):
-    """Fetch additional video details (e.g., views) from the YouTube API."""
+    """Fetch additional video details (e.g., views, likes, comments) from the YouTube API."""
     params = {
         "part": "snippet,statistics",
         "id": ",".join(video_ids),  # Comma-separated list of video IDs
@@ -96,6 +96,12 @@ def extract_video_id_from_url(url):
     return match.group(1) if match else None
 
 
+@app.route('/')
+def index():
+    """Root route for the API."""
+    return "Welcome to the Flask API hosted on Vercel!"
+
+
 @app.route('/api', methods=['GET'])
 def youtube_api():
     """Handle YouTube search or specific video queries."""
@@ -113,7 +119,7 @@ def youtube_api():
             return jsonify({"status": False, "message": formatted_data}), 500
         return jsonify({
             "status": True,
-            "creator": "API DEVELOPER @TheSmartDev & @ISmartDevs",
+            "creator": "API DEVELOPER @TheSmartDev & @agent",
             "result": formatted_data
         })
 
@@ -124,7 +130,7 @@ def youtube_api():
         return jsonify({"status": False, "message": formatted_data}), 500
     return jsonify({
         "status": True,
-        "creator": "API DEVELOPER @TheSmartDev & @ISmartDevs",
+        "creator": "API DEVELOPER @TheSmartDev & @agent",
         "result": formatted_data
     })
 
