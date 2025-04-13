@@ -2,18 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "flask_youtube_api.py",
+      "src": "api/index.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
-      "src": "/api",
-      "dest": "flask_youtube_api.py"
-    },
-    {
-      "src": "/",
-      "dest": "flask_youtube_api.py"
+      "src": "/api/(.*)",
+      "dest": "api/index.py"
     }
   ]
 }
