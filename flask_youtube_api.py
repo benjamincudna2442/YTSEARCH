@@ -4,14 +4,11 @@ import re
 
 app = Flask(__name__)
 
-# Your YouTube Data API key
 YOUTUBE_API_KEY = "AIzaSyBZKN7j0rj22Da7uTbY0E-SIHSn3WGlgZ4"
 YOUTUBE_SEARCH_API_URL = "https://www.googleapis.com/youtube/v3/search"
 YOUTUBE_VIDEOS_API_URL = "https://www.googleapis.com/youtube/v3/videos"
 
-
 def fetch_youtube_data(query):
-    """Fetch search results from YouTube API."""
     params = {
         "part": "snippet",
         "q": query,
@@ -25,12 +22,10 @@ def fetch_youtube_data(query):
     else:
         return {"error": f"Failed to fetch data. HTTP Status Code: {response.status_code}"}
 
-
 def fetch_video_details(video_ids):
-    """Fetch additional video details (e.g., views, likes, comments) from the YouTube API."""
     params = {
         "part": "snippet,statistics",
-        "id": ",".join(video_ids),  # Comma-separated list of video IDs
+        "id": ",".join(video_ids),
         "key": YOUTUBE_API_KEY
     }
     response = requests.get(YOUTUBE_VIDEOS_API_URL, params=params)
@@ -39,9 +34,7 @@ def fetch_video_details(video_ids):
     else:
         return {"error": f"Failed to fetch video details. HTTP Status Code: {response.status_code}"}
 
-
 def format_search_response(data):
-    """Format the YouTube API response for search results."""
     if "error" in data:
         return data["error"]
 
@@ -49,7 +42,6 @@ def format_search_response(data):
     video_details = []
     video_ids = [item["id"]["videoId"] for item in items]
 
-    # Fetch video statistics
     video_stats_response = fetch_video_details(video_ids)
     video_stats = {item["id"]: item for item in video_stats_response.get("items", [])}
 
@@ -67,9 +59,7 @@ def format_search_response(data):
 
     return video_details
 
-
 def format_video_response(data):
-    """Format the response for a specific video."""
     if "error" in data:
         return data["error"]
 
@@ -89,27 +79,21 @@ def format_video_response(data):
         "comments": stats.get("commentCount", "N/A")
     }
 
-
 def extract_video_id_from_url(url):
-    """Extract video ID from a YouTube URL."""
     match = re.search(r"(?:v=|\/)([0-9A-Za-z_-]{11})", url)
     return match.group(1) if match else None
 
-
 @app.route('/api', methods=['GET'])
 def youtube_api():
-    """Handle YouTube search or specific video queries."""
     query = request.args.get('query')
     if not query:
         return jsonify({"status": False, "message": "Query parameter is missing"}), 400
 
-    # Check if the query is a YouTube video URL
     video_id = extract_video_id_from_url(query)
     if video_id:
-        # Fetch details for specific video
         video_data = fetch_video_details([video_id])
         formatted_data = format_video_response(video_data)
-        if isinstance(formatted_data, str):  # Error message
+        if isinstance(formatted_data, str):
             return jsonify({"status": False, "message": formatted_data}), 500
         return jsonify({
             "status": True,
@@ -117,10 +101,9 @@ def youtube_api():
             "result": formatted_data
         })
 
-    # Otherwise, treat the query as a search term
     youtube_data = fetch_youtube_data(query)
     formatted_data = format_search_response(youtube_data)
-    if isinstance(formatted_data, str):  # Error message
+    if isinstance(formatted_data, str):
         return jsonify({"status": False, "message": formatted_data}), 500
     return jsonify({
         "status": True,
@@ -128,6 +111,6 @@ def youtube_api():
         "result": formatted_data
     })
 
-
-if __name__ == '__main__':
-    app.run(debug=True)
+# Vercel WSGI handler
+def handler(environ, start_response):
+    return app(environ, start_response)
