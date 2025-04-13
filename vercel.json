@@ -10,6 +10,10 @@
     {
       "src": "/api",
       "dest": "flask_youtube_api.py"
+    },
+    {
+      "src": "/",
+      "dest": "flask_youtube_api.py"
     }
   ]
 }
